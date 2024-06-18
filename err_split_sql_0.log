@@ -1,0 +1,1 @@
+INSER   INTO  yu.table_name values (12,34),(`ww`,`po`),(`wp`,`1`);
