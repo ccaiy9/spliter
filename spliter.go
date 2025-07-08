@@ -14,6 +14,51 @@ type Option struct {
 	splitCompeteSqlChunk int // byte
 }
 
+func parseValues(input string) []string {
+	var result []string
+	var current strings.Builder
+	openBrackets := 0
+
+	inSingleQuote := false
+	inDoubleQuote := false
+
+	input = strings.TrimSuffix(input, ";")
+
+	var preChar int32
+	for _, char := range input {
+		// 处理字符串内部的字符
+		if char == '\'' && !inDoubleQuote && preChar != 92 {
+			inSingleQuote = !inSingleQuote
+		}
+		if char == '"' && !inSingleQuote && preChar != 92 {
+			inDoubleQuote = !inDoubleQuote
+		}
+
+		preChar = char
+		current.WriteRune(char)
+
+		if !inSingleQuote && !inDoubleQuote {
+			if char == '(' {
+				openBrackets++
+			} else if char == ')' {
+				openBrackets--
+			}
+
+			if openBrackets == 0 && char == ',' {
+				result = append(result, strings.TrimSpace(strings.TrimSuffix(current.String(), ",")))
+				current.Reset()
+			}
+		}
+	}
+
+	// last segment
+	if current.Len() > 0 {
+		result = append(result, strings.TrimSpace(current.String()))
+	}
+
+	return result
+}
+
 func doWrite2Local(sql *string, path string) error {
 
 	file, err := os.Create(path)
@@ -69,8 +114,7 @@ func SplitBatchInsertSql(sql *string, op ...*Option) ([]string, error) {
 		columns = strings.Split(matches[6], ",")
 	}
 
-	values := strings.TrimSpace(matches[7])
-	valueStatements := strings.Split(values, "),")
+	valueStatements := parseValues(matches[7])
 
 	var batchValues []string
 	var batchValueSize int

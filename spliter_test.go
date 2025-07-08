@@ -55,16 +55,22 @@ func Test_correctBatchSqlCorrect(t *testing.T) {
 
 func Test_incorrectBatchSqlCorrect(t *testing.T) {
 	sqlTestList := []string{
-		"INSER   INTO  yu.table_name values (12,34),(`ww`,`po`),(`wp`,`1`);",
+		"INSER   INTO  yu.table_name values (12,34),(`ww`,`po`),(`wp`,`1`);", // error
 		"INSERt INTO  table_name values 12,34),(`ww`,`po`),(`wp`,`1`);",
 		"INSERt INTO  table_name values (12,34),(`ww`,`po`);(`wp`,`1`);",
 		"INSERt INTO  table_name values (12,34),(`ww`,`po`),(`wp`,,`1`);",
+		`iNserT
+				InTO
+				import_db_test_large_sql.large_data_table
+				vaLuEs('d',  'LLLL', 1,2, 'wtux211 \t'),
+			('   \'689', 'wewijiji~~~!!@@),', 9, 20, '（我的以来),') ,
+			('12\"3', '(), ', 9, 20, '(())))), ');`,
 	}
 
 	for index, sql := range sqlTestList {
 		fmt.Println(index)
 		Option := &Option{
-			AbsPath:              "/Users/Downloads/spliter/",
+			AbsPath:              "./",
 			Index:                strconv.Itoa(index),
 			splitCompeteSqlChunk: 10,
 		}
